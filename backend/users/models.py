@@ -8,7 +8,7 @@ username_validator = UnicodeUsernameValidator()
 
 
 class UserRole(TextChoices):
-    USER = 'user', 'Пользователь',
+    USER = 'user', 'Пользователь'
     ADMIN = 'admin', 'Администратор'
 
 
@@ -54,6 +54,9 @@ class User(AbstractUser):
         help_text='Выберите роль пользователя'
     )
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
@@ -71,7 +74,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == UserRole.ADMIN or self.is_superuser
-    
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -102,4 +105,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписался на {self.author}'
-

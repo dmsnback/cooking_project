@@ -1,12 +1,23 @@
 from django.contrib import admin
 
 from recipes.models import (
-    Favorite, Ingredient, IngredientRecipe, Recipe, ShoppingCard, Tag
+    Favorite,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    ShoppingCart,
+    Tag
 )
+
+
+class IngredientInline(admin.TabularInline):
+    model = IngredientRecipe
+    extra = 1
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
+    inlines = [IngredientInline]
     list_display = (
         'name',
         'measurement_unit'
@@ -23,18 +34,30 @@ class TagAdmin(admin.ModelAdmin):
         'color',
         'slug'
     )
+    search_fields = ('name',)
+    list_filter = ('name',)
+    empty_value_display = '-пусто-'
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
-        'cooking_time',
-        'author'
+        'author',
+        'added_in_favorites'
     )
     search_fields = ('name',)
-    list_filter = ('name', 'author')
+    list_filter = ('name', 'author', 'tags')
+    inlines = [IngredientInline]
+    readonly_fields = ('added_in_favorites',)
     empty_value_display = '-пусто-'
+
+    def added_in_favorites(self, obj):
+        return obj.favorites.all().count()
+
+    added_in_favorites.short_description = (
+        'Количество добавлений рецепта в избранное:'
+    )
 
 
 @admin.register(Favorite)
@@ -54,8 +77,8 @@ class IngredientRecipeAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(ShoppingCard)
-class ShoppingCardAdmin(admin.ModelAdmin):
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'recipe'

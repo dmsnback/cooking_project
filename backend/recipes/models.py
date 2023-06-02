@@ -64,7 +64,7 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     '''Модель рецепта'''
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
         verbose_name='Список ингредиентов',
@@ -72,7 +72,7 @@ class Recipe(models.Model):
         help_text='Выберите или добавте ингридиенты'
 
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         verbose_name='Список тэгов',
         related_name='recipes',
@@ -140,12 +140,13 @@ class IngredientRecipe(models.Model):
         validators=[
             MinValueValidator(
                 limit_value=1,
-                message='Время должно быть больше нуля.'
+                message='Количество должно быть больше нуля.'
             )
         ]
     )
 
     class Meta:
+
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
 
@@ -184,18 +185,18 @@ class Favorite(models.Model):
         return f'{self.user} добавил {self.recipe} в избранное'
 
 
-class ShoppingCard(models.Model):
+class ShoppingCart(models.Model):
     '''Модель списка покупок'''
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shopping_cards',
+        related_name='shopping_cart',
         verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='shopping_cards',
+        related_name='shopping_cart',
         verbose_name='Рецепт'
     )
 
@@ -205,9 +206,9 @@ class ShoppingCard(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique shopping card'
+                name='unique shopping cart'
             )
         ]
 
     def __str__(self):
-        return f'{self.user} добавил {self.recipe} в список покупок2'
+        return f'{self.user} добавил {self.recipe} в список покупок'
