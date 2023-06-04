@@ -35,11 +35,13 @@ class User(AbstractUser):
         'Имя',
         max_length=150,
         help_text='Введите имя пользователя',
+        blank=True
     )
     last_name = models.CharField(
         'Фамилия',
         max_length=150,
-        help_text='Введите фамилию пользователя'
+        help_text='Введите фамилию пользователя',
+        blank=True
     )
     password = models.CharField(
         'Пароль',
@@ -76,18 +78,18 @@ class User(AbstractUser):
         return self.role == UserRole.ADMIN or self.is_superuser
 
 
-class Follow(models.Model):
+class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower',
+        related_name='subscriber',
         verbose_name='Подписчик'
     )
 
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following',
+        related_name='subscribing',
         verbose_name='Автор'
     )
 
@@ -95,7 +97,7 @@ class Follow(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='unique follow'
+                name='unique subscription'
             )
         ]
 

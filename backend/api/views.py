@@ -1,10 +1,9 @@
-from datetime import datetime
-
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -32,7 +31,7 @@ from .serializers import (
     ShortRecipeSerializer,
     TagSerializer
 )
-from users.models import Follow
+from users.models import Subscribe
 
 
 User = get_user_model()
@@ -48,7 +47,7 @@ class CustomUserViewSet(UserViewSet):
         methods=['post', 'delete'],
         permission_classes=[IsAuthenticated]
     )
-    def follow(self, request, **kwargs):
+    def subscribe(self, request, **kwargs):
         user = request.user
         author_id = self.kwargs.get('id')
         author = get_object_or_404(User, id=author_id)
@@ -59,26 +58,25 @@ class CustomUserViewSet(UserViewSet):
                 data=request.data,
                 context=({'request': request})
             )
-            serializer.is_valid(raise_exeption=True)
-            Follow.objects.create(user=user, author=author)
+            serializer.is_valid(raise_exception=True)
+            Subscribe.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            follow = get_object_or_404(
-                Follow,
+        follow = get_object_or_404(
+                Subscribe,
                 user=user,
                 author=author
             )
-            follow.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        follow.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
         permission_classes=[IsAuthenticated]
     )
-    def follows(self, request):
+    def subscriptions(self, request):
         user = request.user
-        queryset = User.objects.filter(users__follow=user)
+        queryset = User.objects.filter(subscribing__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
             pages,
@@ -125,8 +123,7 @@ class RecipeViewSet(ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'POST':
             return self.add_to(Favorite, request.user, pk)
-        else:
-            return self.delete_form(Favorite, request.user, pk)
+        return self.delete_form(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -136,8 +133,7 @@ class RecipeViewSet(ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_to(ShoppingCart, request.user, pk)
-        else:
-            return self.delete_form(ShoppingCart, request.user, pk)
+        return self.delete_form(ShoppingCart, request.user, pk)
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
@@ -152,7 +148,7 @@ class RecipeViewSet(ModelViewSet):
 
     def delete_form(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
-        if obj.exists():
+        if obj:
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'errors': 'Рецепт уже удален!'},
@@ -162,31 +158,32 @@ class RecipeViewSet(ModelViewSet):
         detail=False,
         permission_classes=[IsAuthenticated]
     )
-    def download_shopping_card(self, request):
+    def download_shopping_cart(self, request):
         user = request.user
-        if not user.shopping_cart.exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__shopping_cart__user=request.user
+        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
+        recipes = [item.recipe.id for item in shopping_cart]
+        buy_list = IngredientRecipe.objects.filter(
+            recipe__in=recipes
         ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
-        today = datetime.today()
+            'ingredient'
+        ).annotate(
+            amount=Sum('amount')
+        )
+        today = timezone.now()
         shopping_list = (
-            f'Список покупок для: {user.get_full_name()}\n\n'
+            f'Список покупок для:{user.get_full_name()}\n\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
-        shopping_list += '\n'.join([
-            f'- {ingredient["ingredient__name"]} '
-            f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["amount"]}'
-            for ingredient in ingredients
-        ])
-        shopping_list += f'\n\nFoodgram ({today:%Y})'
-        filename = f'{user.username}_shopping_list.txt'
-        response = HttpResponse(
-            shopping_list, content_type='text.txt; charset=utf-8'
+        for item in buy_list:
+            ingredient = Ingredient.objects.get(pk=item['ingredient'])
+            amount = item['amount']
+            shopping_list += (
+                f'{ingredient.name}, {amount} '
+                f'{ingredient.measurement_unit}\n'
+            )
+        response = HttpResponse(shopping_list, content_type="text/plain")
+        response['Content-Disposition'] = (
+            'attachment; filename={user.username}_shopping_list.txt'
         )
-        response['Content-Disposition'] = f'attachment; filename={filename}'
+
         return response
