@@ -167,18 +167,18 @@ class RecipeViewSet(ModelViewSet):
         ).values(
             'ingredient'
         ).annotate(
-            amount=Sum('amount')
+            total_amount=Sum('amount')
         )
         today = timezone.now()
         shopping_list = (
-            f'Список покупок для:{user.get_full_name()}\n\n'
+            f'Список покупок для:{user.get_full_name()}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
         for item in buy_list:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
-            amount = item['amount']
+            total_amount = item['total_amount']
             shopping_list += (
-                f'{ingredient.name}, {amount} '
+                f'{ingredient.name}, {total_amount} '
                 f'{ingredient.measurement_unit}\n'
             )
         response = HttpResponse(shopping_list, content_type="text/plain")
