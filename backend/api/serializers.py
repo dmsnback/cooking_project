@@ -217,20 +217,23 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return value
 
     def create_update_ingredients(self, ingredients, recipe):
+        create_ingredients = []
         for ingredient in ingredients:
-            IngredientRecipe.objects.update_or_create(
+            ingr = IngredientRecipe(
                 recipe=recipe,
-                ingredient=get_object_or_404(Ingredient, pk=ingredient['id']),
+                ingredient_id=ingredient['id'],
                 amount=ingredient['amount']
             )
-        return recipe
+            create_ingredients.append(ingr)
+        IngredientRecipe.objects.bulk_create(create_ingredients)
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        return self.create_update_ingredients(ingredients, recipe)
+        self.create_update_ingredients(ingredients, recipe)
+        return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags', None)
@@ -239,7 +242,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients', None)
         if ingredients is not None:
             instance.ingredients.clear()
-        self.create_update_ingredients(ingredients, instance)
+            self.create_update_ingredients(ingredients, instance)
 
         return super().update(instance, validated_data)
 
