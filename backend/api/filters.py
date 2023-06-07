@@ -9,13 +9,12 @@ User = get_user_model()
 
 class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
-        lookup_expr='startswitch'
+        field_name='name',
+        lookup_expr='icontains'
     )
 
     class Meta:
-        fields = (
-            'name',
-        )
+        fields = ('name',)
         model = Ingredient
 
 

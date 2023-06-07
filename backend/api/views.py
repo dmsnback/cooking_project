@@ -97,7 +97,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerialiser
     permission_class = (AdminOrAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    flterset_class = IngredientFilter
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(ModelViewSet):
@@ -183,7 +183,7 @@ class RecipeViewSet(ModelViewSet):
             )
         response = HttpResponse(shopping_list, content_type="text/plain")
         response['Content-Disposition'] = (
-            'attachment; filename={user.username}_shopping_list.txt'
+            f'attachment; filename={user.username}_shopping_list.txt'
         )
 
         return response

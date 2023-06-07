@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -49,13 +48,13 @@ class CustomUserSerializer(UserSerializer):
 
 
 class FollowSerializer(CustomUserSerializer):
-    recipe_count = serializers.SerializerMethodField()
-    recipe = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
         fields = CustomUserSerializer.Meta.fields + (
-            'recipe_count',
-            'recipe'
+            'recipes',
+            'recipes_count'
         )
 
         read_only_fields = ('email', 'username')
@@ -75,10 +74,10 @@ class FollowSerializer(CustomUserSerializer):
             )
         return data
 
-    def get_recipe_count(self, author):
+    def get_recipes_count(self, author):
         return author.recipes.count()
 
-    def get_recipe(self, author):
+    def get_recipes(self, author):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
         recipes = author.recipes.all()
