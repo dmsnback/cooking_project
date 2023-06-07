@@ -170,8 +170,9 @@ class RecipeViewSet(ModelViewSet):
             total_amount=Sum('amount')
         )
         today = timezone.now()
+        name_user = user.get_full_name()
         shopping_list = (
-            f'Список покупок для:{user.get_full_name()}\n'
+            f'Список покупок для: {name_user}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
         for item in buy_list:
@@ -183,7 +184,7 @@ class RecipeViewSet(ModelViewSet):
             )
         response = HttpResponse(shopping_list, content_type="text/plain")
         response['Content-Disposition'] = (
-            f'attachment; filename={user.username}_shopping_list.txt'
+            'attachment; filename=_shopping_list.txt'
         )
 
         return response
