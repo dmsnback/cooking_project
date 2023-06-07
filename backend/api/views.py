@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import AdminOrAuthorOrReadOnly
@@ -21,7 +22,7 @@ from recipes.models import (
     Recipe,
     ShoppingCart,
     Tag
-    )
+)
 from .serializers import (
     CreateRecipeSerializer,
     CustomUserSerializer,
@@ -63,10 +64,10 @@ class CustomUserViewSet(UserViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         follow = get_object_or_404(
-                Subscribe,
-                user=user,
-                author=author
-            )
+            Subscribe,
+            user=user,
+            author=author
+        )
         follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
