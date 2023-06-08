@@ -83,8 +83,7 @@ jobs:
             sudo docker pull dmsn/foodgram_backend:latest
             sudo docker pull dmsn/foodgram_frontend:latest
             sudo docker-compose stop
-            sudo docker-compose rm foodgram_backend
-            sudo docker-compose rm frfoodgram_frontend
+            sudo docker-compose rm backend
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
