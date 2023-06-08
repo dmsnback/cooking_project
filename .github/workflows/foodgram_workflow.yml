@@ -27,6 +27,7 @@ jobs:
     name: Backend Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     needs: tests
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -42,12 +43,13 @@ jobs:
         with:
           context: backend/
           push: true
-          tags: dmsn/backend:latest
+          tags: dmsn/foodgram_backend:latest
           
   build_and_push_frontend_to_docker_hub:
     name: Frontend Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     needs: build_and_push_backend_to_docker_hub
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -63,4 +65,4 @@ jobs:
         with:
           context: frontend
           push: true
-          tags: dmsn/frontend:latest
+          tags: dmsn/foodgram_frontend:latest
