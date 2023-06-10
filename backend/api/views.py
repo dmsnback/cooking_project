@@ -157,6 +157,7 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         detail=False,
+        methods=['get'],
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
@@ -164,28 +165,27 @@ class RecipeViewSet(ModelViewSet):
         shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
         recipes = [item.recipe.id for item in shopping_cart]
         buy_list = IngredientRecipe.objects.filter(
-            recipe__shopping_cart__user=recipes
+            recipe__in=recipes
         ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(
+            'ingredient'
+        ).aggregate(
             total_amount=Sum('amount')
         )
         today = timezone.now()
         name_user = user.get_full_name()
         shopping_list = (
-            f'Списокк покупокк для: {name_user}\n'
+            f'Списоккк покупокrrr для: {name_user}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
         for item in buy_list:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
-            total_amount = item['total_amount']
+            amount = item['total_amount']
             shopping_list += (
-                f'{ingredient.name}, {total_amount} '
+                f'{ingredient.name}, {amount} '
                 f'{ingredient.measurement_unit}\n'
             )
         response = HttpResponse(shopping_list, content_type="text/plain")
         response['Content-Disposition'] = (
-            'attachment; filename=_shopping_list.txt'
+            'attachment; filename=shopping_list.txt'
         )
         return response
