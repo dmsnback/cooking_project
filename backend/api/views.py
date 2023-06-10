@@ -174,18 +174,18 @@ class RecipeViewSet(ModelViewSet):
         today = timezone.now()
         name_user = user.get_full_name()
         shopping_list = (
-            f'Списоккк покупокrrr для: {name_user}\n'
+            f'Список покупок для: {name_user}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
         for item in buy_list:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
             amount = item['total_amount']
             shopping_list += (
-                f'{ingredient.name}, {amount} '
-                f'{ingredient.measurement_unit}\n'
+                f'- {ingredient.name} - {amount} '
+                f'({ingredient.measurement_unit})\n'
             )
         response = HttpResponse(shopping_list, content_type="text/plain")
         response['Content-Disposition'] = (
-            f'attachment; filename={name_user}shopping_list.txt'
+            'attachment; filename=shopping_list.txt'
         )
         return response
