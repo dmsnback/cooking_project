@@ -164,16 +164,17 @@ class RecipeViewSet(ModelViewSet):
         shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
         recipes = [item.recipe.id for item in shopping_cart]
         buy_list = IngredientRecipe.objects.filter(
-            recipe__in=recipes
+            recipe__shopping_cart__user=recipes
         ).values(
-            'ingredient'
+            'ingredient__name',
+            'ingredient__measurement_unit'
         ).annotate(
             total_amount=Sum('amount')
         )
         today = timezone.now()
         name_user = user.get_full_name()
         shopping_list = (
-            f'Список покупок для: {name_user}\n'
+            f'Списокк покупокк для: {name_user}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
         for item in buy_list:
@@ -187,5 +188,4 @@ class RecipeViewSet(ModelViewSet):
         response['Content-Disposition'] = (
             'attachment; filename=_shopping_list.txt'
         )
-
         return response
