@@ -162,26 +162,30 @@ class RecipeViewSet(ModelViewSet):
     )
     def download_shopping_cart(self, request):
         user = request.user
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__shopping_cart__user=user
+        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
+        recipes = [item.recipe.id for item in shopping_cart]
+        buy_list = IngredientRecipe.objects.filter(
+            recipe__in=recipes
         ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(total_amount=Sum('amount'))
-
+            'ingredient'
+        ).annotate(
+            total_amount=Sum('amount')
+        ).order_by('total_amount')
         today = timezone.now()
+        name_user = user.get_full_name()
         shopping_list = (
-            f'Список покупок для: {user.get_full_name()}\n\n'
+            f'Списоккк покупокrrr для: {name_user}\n'
             f'Дата: {today:%Y-%m-%d}\n\n'
         )
-        shopping_list += '\n'.join([
-            f'- {ingredient["ingredient__name"]} '
-            f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["total_amount"]}'
-            for ingredient in ingredients
-        ])
-        filename = f'{user.username}_shopping_list.txt'
-        response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-
+        for item in buy_list:
+            ingredient = Ingredient.objects.get(pk=item['ingredient'])
+            amount = item['total_amount']
+            shopping_list += (
+                f'{ingredient.name}, {amount} '
+                f'{ingredient.measurement_unit}\n'
+            )
+        response = HttpResponse(shopping_list, content_type="text/plain")
+        response['Content-Disposition'] = (
+            f'attachment; filename={name_user}shopping_list.txt'
+        )
         return response
