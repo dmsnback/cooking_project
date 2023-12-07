@@ -2,24 +2,6 @@
 <a name="Начало"></a>
 [![Foodgram workflow](https://github.com/dmsnback/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/dmsnback/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
-#
-Проект развернут на сервере и
-доступен по адресу [foodgram](http://dmsn-foodgram.ddns.net/recipes)
-
-Документация к API доступна [здесь](http://dmsn-foodgram.ddns.net/api/docs/)
-
-В документации описано, как должен работать ваш API. Документация представлена в формате Redoc.
-
-#
-```
-Для входа в админку:
-
-email: admin@mail.ru
-password: admin
-```
-#
-
-
 - [Описание](#Описание)
 - [Технологии](#Технологии)
 - [Шаблон заполнения .env-файла](#Шаблон)
