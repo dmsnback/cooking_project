@@ -1,4 +1,4 @@
-# Foodgram Project
+# Сooking Project
 <a name="Начало"></a>
 [![Foodgram workflow](https://github.com/dmsnback/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/dmsnback/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
